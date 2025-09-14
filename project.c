@@ -32,7 +32,9 @@ int register_user()
     }
     fprintf(fp, "%s %s\n", u.email, u.password);
     fclose(fp);
-    printf("Register sucessfully :) \n");
+    
+    printf("\n");
+    printf(" \t Register sucessfully :) \n");
     return 1;
 }
 
@@ -65,7 +67,8 @@ int login_user()
     fclose(fp);
     if (success)
     {
-        printf("login is successfull! welcome %s \n", email);
+        printf("\n");
+        printf(" \t login is successfull! welcome %s \n", email);
         return 1;
     }
     else
@@ -163,6 +166,49 @@ void search_entry()
     fclose(fp);
 }
 
+void edit_entry(){
+    struct Diary d;
+    FILE *fp, *temp;
+    char search_date[50];
+    int found = 0;
+
+    fp = fopen("Diary.txt", "r");
+    temp = fopen("Temp.txt", "w");
+    if (fp == NULL || temp == NULL)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
+    printf("Enter Date of entry to EDIT (DD/MM/YYYY): ");
+    scanf("%s", search_date);
+
+    while (fscanf(fp, "%[^,],%[^,],%[^\n]\n", d.Date, d.Title, d.content) != EOF)
+    {
+        if (strcmp(d.Date, search_date) == 0)
+        {
+            found = 1;
+            printf("Editing entry on [%s]\n", d.Date);
+            printf("Enter new TITLE: ");
+            scanf(" %[^\n]", d.Title);
+            printf("Enter new CONTENT: ");
+            scanf(" %[^\n]", d.content);
+        }
+        fprintf(temp, "%s,%s,%s\n", d.Date, d.Title, d.content);
+    }
+
+    fclose(fp);
+    fclose(temp);
+
+    remove("Diary.txt");
+    rename("Temp.txt", "Diary.txt");
+
+    if (found)
+        printf("Entry updated successfully!\n");
+    else
+        printf("No entry found on that date.\n");
+}
+
 int main()
 {
     int choice, loggedIN = 0;
@@ -190,7 +236,7 @@ int main()
     while (1)
     {
         printf("\n||------ MINDVAULT DIARY ------||\n");
-        printf("1. Add Entry\n2. View Entries\n3. Search by Date\n4. Logout\n");
+        printf("1. Add Entry\n 2. View Entries\n 3. Search by Date\n 4. Edit Entries\n 4. Logout\n");
         printf("Enter choice: ");
         scanf("%d", &choice);
 
@@ -206,6 +252,9 @@ int main()
             search_entry();
             break;
         case 4:
+            edit_entry();
+            break;
+        case 5:
             printf("Goodbye! see you again :)\n Auther By :- AMBIKA\tALISHA\tANKITA");
             exit(0);
         default:
