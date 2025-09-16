@@ -3,24 +3,25 @@
 #include <stdlib.h>
 struct user
 {
-    char email[50];
+    char user_name[50];
     char password[20];
 };
 
 struct Diary
 {
+    char user_name[50];
     char Date[60];
     char Title[100];
     char content[500];
 };
-
+    char userName[50];
 int register_user()
 {
     struct user u;
     FILE *fp;
 
-    printf("Enter Email :- \n");
-    scanf("%s", u.email);
+    printf("Enter User name :- \n");
+    scanf("%s", u.user_name);
     printf("Enter password :- \n");
     scanf("%s", u.password);
 
@@ -30,7 +31,7 @@ int register_user()
         printf("Eroor opening file !\n");
         return 0;
     }
-    fprintf(fp, "%s %s\n", u.email, u.password);
+    fprintf(fp, "%s %s\n", u.user_name, u.password);
     fclose(fp);
     
     printf("\n");
@@ -42,11 +43,11 @@ int login_user()
 {
     struct user u;
     FILE *fp;
-    char email[50], password[50];
+    char user_name[50], password[50];
     int success = 0;
 
-    printf("Enter email :- \n");
-    scanf("%s", email);
+    printf("Enter user_name :- \n");
+    scanf("%s", user_name);
     printf("Enter password :- \n");
     scanf("%s", password);
 
@@ -56,9 +57,9 @@ int login_user()
         printf("NO,user found! please register first. \n");
         return 0;
     }
-    while (fscanf(fp, "%s %s", u.email, u.password) != EOF)
+    while (fscanf(fp, "%s %s", u.user_name, u.password) != EOF)
     {
-        if (strcmp(u.email, email) == 0 && strcmp(u.password, password) == 0)
+        if (strcmp(u.user_name, user_name) == 0 && strcmp(u.password, password) == 0)
         {
             success = 1;
             break;
@@ -68,12 +69,12 @@ int login_user()
     if (success)
     {
         printf("\n");
-        printf(" \t login is successfull! welcome %s \n", email);
+        printf(" \t login is successfull! welcome %s \n", user_name);
         return 1;
     }
     else
     {
-        printf("invalid email or password.\n");
+        printf("invalid user_name or password.\n");
         return 0;
     }
 }
@@ -89,7 +90,7 @@ void add_entry()
         printf("Error opening Diary file! \n");
         return;
     }
-
+    strcpy(d.user_name, userName); 
     printf("Enter Date (DD/MM/YYYY) : ");
     scanf(" %[^\n]", d.Date);
 
@@ -99,8 +100,7 @@ void add_entry()
     printf("Enter content : ");
     scanf(" %[^\n]", d.content);
 
-    fprintf(fp, "%s, %s, %s \n", d.Date, d.Title, d.content);
-
+    fprintf(fp, "%s %s, %s, %s \n", d.user_name,d.Date, d.Title, d.content);
     fclose(fp);
 
     printf("Entry Saved :) \n");
@@ -117,19 +117,26 @@ void view_entry()
         printf("NO Diary Entry found! \n");
         return;
     }
+    printf("Enter Username to view diary: ");
+    scanf("%s", userName);
 
     printf("\n ||------ WELCOME TO MINDVAULT DIARY ------||\n");
 
-    while (fscanf(fp, "%[^,],%[^,],%[^\n]\n", d.Date, d.Title, d.content) != EOF)
+    while (fscanf(fp, "%[^,]%[^,],%[^,],%[^\n]\n", d.user_name,d.Date, d.Title, d.content) != EOF)
     {
+        if (strcmp(d.user_name, userName) == 0)
+        {
         printf("\n\n");
+        printf("User: %s\n", d.user_name);
         printf("[%s] \n", d.Date);
         printf("%s - \n", d.Title);
         printf("%s\n", d.content);
         printf("\n\n");
+        }
     }
     fclose(fp);
 }
+
 void search_entry()
 {
     struct Diary d;
@@ -168,8 +175,9 @@ void search_entry()
 
 void edit_entry(){
     struct Diary d;
+    struct user u;
     FILE *fp, *temp;
-    char search_date[50];
+    char search_userName[50];
     int found = 0;
 
     fp = fopen("Diary.txt", "r");
@@ -180,12 +188,12 @@ void edit_entry(){
         return;
     }
 
-    printf("Enter Date of entry to EDIT (DD/MM/YYYY): ");
-    scanf("%s", search_date);
+    printf("Enter UserName of entry to EDIT (DD/MM/YYYY): ");
+    scanf("%s", search_userName);
 
     while (fscanf(fp, "%[^,],%[^,],%[^\n]\n", d.Date, d.Title, d.content) != EOF)
     {
-        if (strcmp(d.Date, search_date) == 0)
+        if (strcmp(u.user_name, search_userName) == 0)
         {
             found = 1;
             printf("Editing entry on [%s]\n", d.Date);
@@ -208,6 +216,47 @@ void edit_entry(){
     else
         printf("No entry found on that date.\n");
 }
+
+void delete_entry()
+{
+    struct Diary d;
+    FILE *fp, *temp;
+    char search_date[50];
+    int found = 0;
+
+    fp = fopen("Diary.txt", "r");
+    temp = fopen("Temp.txt", "w");
+    if (fp == NULL || temp == NULL)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+
+    printf("Enter Date of entry to DELETE (DD/MM/YYYY): ");
+    scanf("%s", search_date);
+
+    while (fscanf(fp, "%[^,],%[^,],%[^\n]\n", d.Date, d.Title, d.content) != EOF)
+    {
+        if (strcmp(d.Date, search_date) == 0)
+        {
+            found = 1;
+            printf("Entry on [%s] deleted.\n", d.Date);
+            continue; 
+        }
+        fprintf(temp, "%s,%s,%s\n", d.Date, d.Title, d.content);
+    }
+
+    fclose(fp);
+    fclose(temp);
+
+    remove("Diary.txt");
+    rename("Temp.txt", "Diary.txt");
+
+    if (!found)
+        printf("No entry found on that date.\n");
+}
+
+
 
 int main()
 {
@@ -236,7 +285,7 @@ int main()
     while (1)
     {
         printf("\n||------ MINDVAULT DIARY ------||\n");
-        printf("1. Add Entry\n 2. View Entries\n 3. Search by Date\n 4. Edit Entries\n 4. Logout\n");
+        printf("1. Add Entry\n 2. View Entries\n 3. Search by UserName\n 4. Edit Entries\n 5.Delete entry\n 6. Logout\n");
         printf("Enter choice: ");
         scanf("%d", &choice);
 
@@ -255,6 +304,9 @@ int main()
             edit_entry();
             break;
         case 5:
+            delete_entry();
+            break;
+        case 6:
             printf("Goodbye! see you again :)\n Auther By :- AMBIKA\tALISHA\tANKITA");
             exit(0);
         default:
