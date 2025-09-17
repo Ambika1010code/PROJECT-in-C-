@@ -100,7 +100,7 @@ void add_entry()
     printf("Enter content : ");
     scanf(" %[^\n]", d.content);
 
-    fprintf(fp, "%s %s, %s, %s \n", d.user_name,d.Date, d.Title, d.content);
+    fprintf(fp, "%s,%s,%s,%s\n", d.user_name, d.Date, d.Title, d.content);
     fclose(fp);
 
     printf("Entry Saved :) \n");
@@ -122,17 +122,13 @@ void view_entry()
 
     printf("\n ||------ WELCOME TO MINDVAULT DIARY ------||\n");
 
-    while (fscanf(fp, "%[^,]%[^,],%[^,],%[^\n]\n", d.user_name,d.Date, d.Title, d.content) != EOF)
-    {
-        if (strcmp(d.user_name, userName) == 0)
-        {
-        printf("\n\n");
-        printf("User: %s\n", d.user_name);
-        printf("[%s] \n", d.Date);
-        printf("%s - \n", d.Title);
-        printf("%s\n", d.content);
-        printf("\n\n");
-        }
+   while (fscanf(fp, "%[^,],%[^,],%[^,],%[^\n]\n",
+              d.user_name, d.Date, d.Title, d.content) != EOF) {
+      if (strcmp(d.user_name, userName) == 0) {
+       printf("\n\n DATE:- [%s] \n",d.Date);
+       printf("TITLE:- %s\n",d.Title);
+        printf("CONTENT:- %s\n",d.content);
+    }
     }
     fclose(fp);
 }
