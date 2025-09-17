@@ -281,7 +281,7 @@ int main()
     while (1)
     {
         printf("\n||------ MINDVAULT DIARY ------||\n");
-        printf("1. Add Entry\n 2. View Entries\n 3. Search by UserName\n 4. Edit Entries\n 5.Delete entry\n 6. Logout\n");
+        printf(" 1. Add Entry\n 2. View Entries\n 3. Search by UserName\n 4. Edit Entries\n 5.Delete entry\n 6. Logout\n");
         printf("Enter choice: ");
         scanf("%d", &choice);
 
