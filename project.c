@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <conio.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -16,14 +17,33 @@ struct Diary {
 
 char userName[50];
 
+void getPassword(char *password) {
+    char ch;
+    int i = 0;
+    while (1) {
+        ch = getch();
+        if (ch == 13) {
+            password[i] = '\0';
+            break;
+        } else if (ch == 8 && i > 0) { 
+            i--;
+            printf("\b \b");
+        } else {
+            password[i++] = ch;
+            printf("*");
+        }
+    }
+    printf("\n");
+}
+
 int register_user() {
     struct user u;
     FILE *fp;
 
     printf("Enter User name :- \n");
     scanf("%s", u.user_name);
-    printf("Enter password :- \n");
-    scanf("%s", u.password);
+    printf("Enter Password:- \n");
+    getPassword(u.password);
 
     fp = fopen("user.txt", "a");
     if (fp == NULL) {
@@ -46,7 +66,7 @@ int login_user() {
     printf("Enter user_name :- \n");
     scanf("%s", user_name);
     printf("Enter password :- \n");
-    scanf("%s", password);
+    getPassword(password);
 
     fp = fopen("user.txt", "r");
     if (fp == NULL) {
@@ -56,7 +76,7 @@ int login_user() {
     while (fscanf(fp, "%s %s", u.user_name, u.password) != EOF) {
         if (strcmp(u.user_name, user_name) == 0 && strcmp(u.password, password) == 0) {
             success = 1;
-            strcpy(userName, user_name); // save logged in username
+            strcpy(userName, user_name); 
             break;
         }
     }
@@ -68,6 +88,45 @@ int login_user() {
         printf("Invalid user_name or password.\n");
         return 0;
     }
+}
+
+void reset_password() {
+    struct user u;
+    FILE *fp, *temp;
+    char username[50], newPassword[20];
+    int found = 0;
+
+    printf("Enter your Username to reset password: ");
+    scanf("%s", username);
+
+    fp = fopen("user.txt", "r");
+    temp = fopen("temp.txt", "w");
+
+    if (fp == NULL || temp == NULL) {
+        printf("Error opening file!\n");
+        return;
+    }
+
+    while (fscanf(fp, "%s %s", u.user_name, u.password) != EOF) {
+        if (strcmp(u.user_name, username) == 0) {
+            found = 1;
+            printf("Enter new Password: ");
+            getPassword(newPassword);
+            fprintf(temp, "%s %s\n", u.user_name, newPassword);
+        } else {
+            fprintf(temp, "%s %s\n", u.user_name, u.password);
+        }
+    }
+
+    fclose(fp);
+    fclose(temp);
+    remove("user.txt");
+    rename("temp.txt", "user.txt");
+
+    if (found)
+        printf("Password reset successful!\n");
+    else
+        printf("Username not found!\n");
 }
 
 void add_entry() {
@@ -163,16 +222,41 @@ void edit_entry() {
 
     printf("Enter Date of entry to EDIT (DD/MM/YYYY): ");
     scanf("%s", search_date);
-
+    getchar(); 
     while (fscanf(fp, "%[^,],%[^,],%[^,],%[^\n]\n",
                   d.user_name, d.Date, d.Title, d.content) != EOF) {
         if (strcmp(d.user_name, userName) == 0 && strcmp(d.Date, search_date) == 0) {
             found = 1;
-            printf("Editing entry on [%s]\n", d.Date);
-            printf("Enter new TITLE: ");
-            scanf(" %[^\n]", d.Title);
-            printf("Enter new CONTENT: ");
-            scanf(" %[^\n]", d.content);
+            printf("\nEditing entry on [%s]\n", d.Date);
+            printf("Current Title: %s\n", d.Title);
+            printf("Current Content: %s\n", d.content);
+            char choice;
+            char buffer[500];
+
+            printf("\nDo you want to change Title? (y/n): ");
+            scanf("%c", &choice);
+            getchar(); 
+            if (choice == 'y' || choice == 'Y') {
+                printf("Enter new Title: ");
+                fgets(buffer, sizeof(buffer), stdin);
+                buffer[strcspn(buffer, "\n")] = 0;
+                strcpy(d.Title, buffer);
+        }
+        printf("\nDo you want to (a)ppend, (o)verwrite, or (k)eep content? ");
+            scanf("%c", &choice);
+            getchar(); 
+            if (choice == 'a' || choice == 'A') {
+                printf("Enter text to append: ");
+                fgets(buffer, sizeof(buffer), stdin);
+                buffer[strcspn(buffer, "\n")] = 0;
+                strcat(d.content, " ");  
+                strcat(d.content, buffer);
+            } else if (choice == 'o' || choice == 'O') {
+                printf("Enter new Content: ");
+                fgets(buffer, sizeof(buffer), stdin);
+                buffer[strcspn(buffer, "\n")] = 0;
+                strcpy(d.content, buffer);
+            } 
         }
         fprintf(temp, "%s,%s,%s,%s\n", d.user_name, d.Date, d.Title, d.content);
     }
@@ -229,7 +313,7 @@ int main() {
     int choice, loggedIN = 0;
     while (!loggedIN) {
         printf("\n||------ Welcome to MINDVAULT ------||\n");
-        printf("1. Register\n2. Login\n3. Exit\n");
+        printf("1. Register\n2. Login\n3. Reset_password\n4. Exit\n");
         printf("Enter choice: ");
         scanf("%d", &choice);
 
@@ -241,6 +325,9 @@ int main() {
             loggedIN = login_user();
             break;
         case 3:
+            reset_password(); 
+            break;
+        case 4:
             exit(0);
         default:
             printf("Invalid choice! Choose valid option \n");

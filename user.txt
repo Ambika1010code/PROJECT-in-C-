@@ -1,6 +1,3 @@
-AAA.com 1234
-AMBIKA 456
-AAA 1234
-AAA 123
-ambika 456
-pradeep pradeep
+AMBIKA 123
+Ambika 222
+Ambika 222
